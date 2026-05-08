@@ -26,8 +26,9 @@ class TaskPrefixEmbeddings(GoogleGenerativeAIEmbeddings):
 def get_embeddings() -> TaskPrefixEmbeddings:
     global _embeddings
     if _embeddings is None:
+        model_name = os.getenv("GOOGLE_EMBEDDING_MODEL", "models/gemini-embedding-2-preview")
         _embeddings = TaskPrefixEmbeddings(
-            model="models/gemini-embedding-2-preview",
+            model=model_name,
             google_api_key=os.getenv("GOOGLE_API_KEY"),
         )
     return _embeddings

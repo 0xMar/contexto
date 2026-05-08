@@ -28,8 +28,9 @@ def _format_docs(docs) -> str:
 
 class RAGChain:
     def __init__(self):
+        model_name = os.getenv("GOOGLE_MODEL_NAME", "gemini-1.5-flash-lite")
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-1.5-flash-lite",
+            model=model_name,
             google_api_key=os.getenv("GOOGLE_API_KEY"),
             temperature=0.1,
         )
