@@ -24,44 +24,21 @@ export default function Sidebar({
   // Collapsed: narrow icon strip
   if (collapsed) {
     return (
-      <aside className="w-14 h-screen bg-[#1a1a2e] flex flex-col items-center py-3 flex-shrink-0">
+      <aside className="w-14 h-screen bg-[#1a1a2e] flex flex-col items-center justify-start py-4 flex-shrink-0">
         {/* Logo */}
-        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white text-xs font-bold mb-4">
+        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white text-sm font-bold mb-8">
           C
         </div>
 
         {/* Toggle (open sidebar) */}
         <button
           onClick={onToggle}
-          className="p-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-colors mb-2"
+          className="p-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-colors"
           aria-label="Open sidebar"
           title="Open sidebar"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-
-        {/* New chat icon */}
-        <button
-          onClick={onNewChat}
-          className="p-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-colors mb-2"
-          aria-label="New chat"
-          title="New chat"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-        </button>
-
-        {/* Search icon */}
-        <button
-          className="p-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-colors"
-          aria-label="Search chats"
-          title="Search chats"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </button>
       </aside>
