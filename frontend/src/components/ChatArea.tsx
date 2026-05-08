@@ -8,11 +8,13 @@ import { Message } from '@/hooks/useChat'
 interface Props {
   messages: Message[]
   loading: boolean
+  sidebarOpen: boolean
+  onToggleSidebar: () => void
   onSend: (text: string) => void
   onUpload: (file: File) => Promise<void>
 }
 
-export default function ChatArea({ messages, loading, onSend, onUpload }: Props) {
+export default function ChatArea({ messages, loading, sidebarOpen, onToggleSidebar, onSend, onUpload }: Props) {
   const [input, setInput] = useState('')
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -64,6 +66,29 @@ export default function ChatArea({ messages, loading, onSend, onUpload }: Props)
       }`}
     >
       <input {...getInputProps()} />
+
+      {/* Navbar header */}
+      <div className="border-b border-gray-200 bg-white px-4 sm:px-6 py-3 flex items-center gap-3">
+        {/* Toggle button - shows logo when open, hamburger when closed */}
+        <button
+          onClick={onToggleSidebar}
+          className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors flex-shrink-0"
+          aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+          title={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+        >
+          {sidebarOpen ? (
+            // Logo - shown when sidebar is OPEN
+            <div className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+              C
+            </div>
+          ) : (
+            // Hamburger - shown when sidebar is CLOSED
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          )}
+        </button>
+      </div>
 
       {isDragActive && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-indigo-50/95 backdrop-blur-sm border-2 border-dashed border-indigo-300 rounded-lg m-4 pointer-events-none">

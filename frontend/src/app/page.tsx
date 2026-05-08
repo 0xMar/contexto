@@ -22,24 +22,37 @@ export default function Home() {
   const toggle = () => setSidebarOpen(o => !o)
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      {/* Sidebar - renders its own collapsed/expanded state */}
+    <div className="relative h-screen overflow-hidden">
+      {/* Sidebar overlay backdrop on mobile */}
+      {sidebarOpen && (
+        <div
+          onClick={toggle}
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar */}
       <Sidebar
         sessions={sessions}
         activeSessionId={activeSessionId}
-        collapsed={!sidebarOpen}
+        isOpen={sidebarOpen}
         onNewChat={createNewChat}
         onSelectSession={switchSession}
         onDeleteSession={deleteChat}
-        onToggle={toggle}
       />
 
-      <ChatArea
-        messages={messages}
-        loading={loading}
-        onSend={sendMessage}
-        onUpload={uploadFile}
-      />
+      {/* Main chat area */}
+      <div className="flex flex-col h-screen">
+        <ChatArea
+          messages={messages}
+          loading={loading}
+          sidebarOpen={sidebarOpen}
+          onToggleSidebar={toggle}
+          onSend={sendMessage}
+          onUpload={uploadFile}
+        />
+      </div>
     </div>
   )
 }
