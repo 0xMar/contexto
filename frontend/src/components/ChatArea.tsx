@@ -168,7 +168,7 @@ export default function ChatArea({ messages, loading, onSend, onUpload, sidebarO
               rows={1}
               placeholder="Ask a question about your document…"
               disabled={loading || uploading}
-              className="flex-1 resize-none outline-none text-sm text-gray-800 placeholder-gray-400 max-h-40 leading-relaxed bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 resize-none outline-none text-sm text-gray-800 placeholder-gray-400 max-h-40 leading-relaxed bg-transparent disabled:opacity-50 disabled:cursor-not-allowed text-center"
               style={{ height: 'auto' }}
               onInput={e => {
                 const t = e.currentTarget
