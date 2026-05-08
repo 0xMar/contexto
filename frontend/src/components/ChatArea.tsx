@@ -10,8 +10,6 @@ interface Props {
   loading: boolean
   onSend: (text: string) => void
   onUpload: (file: File) => Promise<void>
-  sidebarOpen: boolean
-  onToggleSidebar: () => void
 }
 
 export default function ChatArea({ messages, loading, onSend, onUpload }: Props) {
