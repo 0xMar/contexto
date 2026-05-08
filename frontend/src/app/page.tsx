@@ -35,23 +35,20 @@ export default function Home() {
           onNewChat={createNewChat}
           onSelectSession={switchSession}
           onDeleteSession={deleteChat}
-          onToggleSidebar={toggle}
         />
       </div>
 
-      {/* Floating toggle button — visible only when sidebar is hidden */}
-      {!sidebarOpen && (
-        <button
-          onClick={toggle}
-          className="absolute top-3 left-3 z-20 p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
-          aria-label="Show sidebar"
-          title="Show sidebar"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      )}
+      {/* Toggle button — always fixed top-left, above everything */}
+      <button
+        onClick={toggle}
+        className="fixed top-3 left-3 z-30 p-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-colors"
+        aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+        title={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
 
       <ChatArea
         messages={messages}

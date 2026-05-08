@@ -8,7 +8,6 @@ interface Props {
   onNewChat: () => void
   onSelectSession: (id: string) => void
   onDeleteSession: (id: string) => void
-  onToggleSidebar: () => void
 }
 
 export default function Sidebar({
@@ -17,24 +16,14 @@ export default function Sidebar({
   onNewChat,
   onSelectSession,
   onDeleteSession,
-  onToggleSidebar,
 }: Props) {
   return (
     <aside className="w-64 h-screen bg-[#1a1a2e] flex flex-col flex-shrink-0">
-      <div className="p-3 flex items-center gap-2">
-        <button
-          onClick={onToggleSidebar}
-          className="p-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-colors flex-shrink-0"
-          aria-label="Hide sidebar"
-          title="Hide sidebar"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
+      {/* Spacer so "New Chat" doesn't sit under the fixed toggle button */}
+      <div className="p-3 pl-14">
         <button
           onClick={onNewChat}
-          className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg border border-white/20 text-white/80 hover:bg-white/10 transition-colors text-sm"
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-white/20 text-white/80 hover:bg-white/10 transition-colors text-sm"
         >
           <span className="text-lg leading-none">+</span>
           New Chat
