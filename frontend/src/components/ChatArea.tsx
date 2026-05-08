@@ -10,9 +10,11 @@ interface Props {
   loading: boolean
   onSend: (text: string) => void
   onUpload: (file: File) => Promise<void>
+  sidebarOpen: boolean
+  onToggleSidebar: () => void
 }
 
-export default function ChatArea({ messages, loading, onSend, onUpload }: Props) {
+export default function ChatArea({ messages, loading, onSend, onUpload, sidebarOpen, onToggleSidebar }: Props) {
   const [input, setInput] = useState('')
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -74,6 +76,24 @@ export default function ChatArea({ messages, loading, onSend, onUpload }: Props)
           <p className="text-indigo-600 text-xs mt-1">PDF or TXT files only</p>
         </div>
       )}
+
+      {/* Header with Toggle Button */}
+      <div className="border-b border-gray-200 bg-white px-4 sm:px-6 py-3">
+        <button
+          onClick={onToggleSidebar}
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 hover:text-gray-900"
+          aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+          title={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {sidebarOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            )}
+          </svg>
+        </button>
+      </div>
 
       {/* Messages Container */}
       <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 sm:px-6 py-6">
