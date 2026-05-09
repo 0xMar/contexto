@@ -2,8 +2,12 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ArrowUp, Paperclip, X } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
 import MessageBubble from './MessageBubble'
 import { Message } from '@/hooks/useChat'
+import { cn } from '@/lib/utils'
 
 interface Props {
   messages: Message[]
@@ -15,116 +19,195 @@ interface Props {
 export default function ChatArea({ messages, loading, onSend, onUpload }: Props) {
   const [input, setInput] = useState('')
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, open: openFilePicker } = useDropzone({
     accept: { 'application/pdf': ['.pdf'], 'text/plain': ['.txt'] },
     noClick: true,
     onDrop: async (files) => {
       if (!files[0]) return
       setUploadError(null)
-      try {
-        await onUpload(files[0])
-      } catch (e: unknown) {
-        setUploadError(e instanceof Error ? e.message : 'Upload failed')
-      }
+      setUploading(true)
+      try { await onUpload(files[0]) }
+      catch (e: unknown) { setUploadError(e instanceof Error ? e.message : 'Upload failed') }
+      finally { setUploading(false) }
     },
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault()
     if (!input.trim() || loading) return
     onSend(input)
     setInput('')
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      handleSubmit(e as unknown as React.FormEvent)
+      handleSubmit()
     }
   }
+
+  const autoResize = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value)
+    const t = e.target
+    t.style.height = 'auto'
+    t.style.height = `${Math.min(t.scrollHeight, 200)}px`
+  }
+
+  const isEmpty = messages.length === 0
+  const canSend = input.trim().length > 0 && !loading && !uploading
 
   return (
     <div
       {...getRootProps()}
-      className={`flex flex-col flex-1 h-screen relative transition-colors ${
-        isDragActive ? 'bg-indigo-50' : 'bg-gray-50'
-      }`}
+      className={cn(
+        'flex flex-col h-full relative transition-colors duration-200',
+        isDragActive && 'bg-indigo-950/20'
+      )}
     >
       <input {...getInputProps()} />
 
-      {isDragActive && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-indigo-50/90 border-2 border-dashed border-indigo-400 rounded-lg m-4 pointer-events-none">
-          <p className="text-indigo-600 font-medium">Drop your file here</p>
-        </div>
-      )}
+      {/* Drag overlay */}
+      <AnimatePresence>
+        {isDragActive && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#212121]/90 backdrop-blur-sm border-2 border-dashed border-indigo-500 m-4 rounded-xl pointer-events-none"
+          >
+            <Paperclip className="w-8 h-8 text-indigo-400 mb-2" />
+            <p className="text-indigo-300 font-semibold">Drop your file here</p>
+            <p className="text-indigo-400 text-xs mt-1">PDF or TXT</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-6 py-6">
-        {messages.length === 0 && (
-          <div className="h-full flex flex-col items-center justify-center text-gray-400">
-            <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mb-3">
-              <span className="text-indigo-500 text-xl">💬</span>
+      <div className="flex-1 overflow-y-auto px-4 py-6">
+        <div className="max-w-2xl mx-auto">
+          {isEmpty && (
+            <div className="flex flex-col items-center justify-center text-center py-20">
+              <div className="w-14 h-14 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center mb-4">
+                <span className="text-indigo-400 text-xl font-bold">C</span>
+              </div>
+              <h2 className="text-lg font-semibold text-white mb-1">How can I help you?</h2>
+              <p className="text-sm text-gray-500 max-w-xs">
+                Upload a PDF or TXT file, then ask questions. Sources are cited automatically.
+              </p>
             </div>
-            <p className="text-sm">Drop a PDF or TXT file, then start chatting</p>
-          </div>
-        )}
-        {messages.map((msg, i) => <MessageBubble key={i} message={msg} />)}
-        {loading && (
-          <div className="flex justify-start mb-4">
-            <div className="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-white text-xs font-bold mr-2 flex-shrink-0 mt-1">
-              AI
+          )}
+
+          {messages.map((msg, i) => (
+            <MessageBubble key={i} message={msg} />
+          ))}
+
+          {loading && (
+            <div className="flex justify-start mb-4">
+              <div className="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-white text-xs font-bold mr-2 flex-shrink-0 mt-1">
+                AI
+              </div>
+              <div className="bg-[#2f2f2f] border border-white/10 px-4 py-3 rounded-2xl rounded-bl-sm">
+                <div className="flex gap-1.5">
+                  {[0, 150, 300].map(delay => (
+                    <span
+                      key={delay}
+                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                      style={{ animationDelay: `${delay}ms` }}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
-            <div className="bg-white border border-gray-100 shadow-sm px-4 py-2.5 rounded-2xl rounded-bl-sm">
-              <span className="flex gap-1">
-                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
-                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
-                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]" />
-              </span>
-            </div>
-          </div>
-        )}
-        {uploadError && (
-          <div className="text-red-500 text-sm text-center mb-2">{uploadError}</div>
-        )}
-        <div ref={bottomRef} />
+          )}
+
+          {/* Upload error */}
+          <AnimatePresence>
+            {uploadError && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                className="mb-4 p-3 rounded-lg bg-red-950/50 border border-red-800 flex items-start gap-2"
+              >
+                <p className="text-sm text-red-300 flex-1">{uploadError}</p>
+                <button onClick={() => setUploadError(null)} className="text-red-400 hover:text-red-200">
+                  <X className="w-4 h-4" />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div ref={bottomRef} />
+        </div>
       </div>
 
-      {/* Input */}
-      <div className="px-6 pb-6">
-        <form
-          onSubmit={handleSubmit}
-          className="flex items-end gap-2 bg-white border border-gray-200 rounded-2xl shadow-sm px-4 py-3"
-        >
-          <textarea
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            rows={1}
-            placeholder="Ask a question… (drag & drop a file to upload)"
-            className="flex-1 resize-none outline-none text-sm text-gray-800 placeholder-gray-400 max-h-32 leading-relaxed"
-            style={{ height: 'auto' }}
-            onInput={e => {
-              const t = e.currentTarget
-              t.style.height = 'auto'
-              t.style.height = `${t.scrollHeight}px`
-            }}
-          />
-          <button
-            type="submit"
-            disabled={loading || !input.trim()}
-            className="w-8 h-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors flex-shrink-0"
-          >
-            <svg className="w-4 h-4 text-white rotate-90" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M2 21l21-9L2 3v7l15 2-15 2v7z" />
-            </svg>
-          </button>
-        </form>
+      {/* Input area — Claude style */}
+      <div className="px-4 pb-6 pt-2">
+        <div className="max-w-2xl mx-auto">
+          <div className="relative bg-[#2f2f2f] border border-white/10 rounded-2xl shadow-lg hover:border-white/20 focus-within:border-indigo-500/50 transition-colors">
+            <Textarea
+              ref={textareaRef}
+              value={input}
+              onChange={autoResize}
+              onKeyDown={handleKeyDown}
+              rows={1}
+              placeholder="Ask a question about your document…"
+              disabled={loading || uploading}
+              className="w-full bg-transparent text-white placeholder:text-gray-500 text-sm leading-relaxed px-4 pt-3.5 pb-12 max-h-[200px] border-0 focus-visible:ring-0"
+            />
+
+            {/* Bottom toolbar */}
+            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={openFilePicker}
+                disabled={uploading}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50"
+                aria-label="Upload file"
+                title="Upload PDF or TXT"
+              >
+                {uploading ? (
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                    className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full"
+                  />
+                ) : (
+                  <Paperclip className="w-4 h-4" />
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSubmit()}
+                disabled={!canSend}
+                className={cn(
+                  'w-8 h-8 rounded-lg flex items-center justify-center transition-all',
+                  canSend
+                    ? 'bg-white text-black hover:bg-gray-200'
+                    : 'bg-white/10 text-gray-600 cursor-not-allowed'
+                )}
+                aria-label="Send message"
+              >
+                <ArrowUp className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          <p className="text-xs text-gray-600 mt-2 text-center">
+            Drag & drop files · Shift+Enter for new line
+          </p>
+        </div>
       </div>
     </div>
   )
