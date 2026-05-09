@@ -36,10 +36,11 @@ def get_embeddings() -> TaskPrefixEmbeddings:
 
 def get_vectorstore(session_id: str) -> Chroma:
     if session_id not in _vectorstores:
-        os.makedirs("./data/chroma_db", exist_ok=True)
+        chroma_path = os.getenv("CHROMA_PATH", "./data/chroma_db")
+        os.makedirs(chroma_path, exist_ok=True)
         _vectorstores[session_id] = Chroma(
             collection_name=session_id,
-            persist_directory="./data/chroma_db",
+            persist_directory=chroma_path,
             embedding_function=get_embeddings(),
         )
     return _vectorstores[session_id]
