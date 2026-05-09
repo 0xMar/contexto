@@ -6,6 +6,7 @@ DB_PATH = os.getenv("DB_PATH", "./data/chat_history.db")
 
 
 async def init_db():
+    os.makedirs(os.path.dirname(os.path.abspath(DB_PATH)), exist_ok=True)
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("""
             CREATE TABLE IF NOT EXISTS sessions (
