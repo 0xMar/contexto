@@ -20,8 +20,8 @@ export default function MessageBubble({ message }: { message: Message }) {
             isUser
               ? 'bg-indigo-600 text-white rounded-br-sm'
               : isError
-              ? 'bg-red-50 text-red-700 border border-red-200 rounded-bl-sm'
-              : 'bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-sm'
+              ? 'bg-red-950/50 text-red-300 border border-red-800 rounded-bl-sm'
+              : 'bg-[#2f2f2f] text-gray-100 border border-white/10 rounded-bl-sm'
           }`}
         >
           {isUser ? (
@@ -34,24 +34,18 @@ export default function MessageBubble({ message }: { message: Message }) {
                 ol: ({ children }) => <ol className="my-2 pl-4 list-decimal">{children}</ol>,
                 li: ({ children }) => <li className="my-0.5">{children}</li>,
                 code: ({ children }) => (
-                  <code className="bg-gray-100 text-red-600 px-1.5 py-0.5 rounded font-mono text-xs">
+                  <code className="bg-black/30 text-indigo-300 px-1.5 py-0.5 rounded font-mono text-xs">
                     {children}
                   </code>
                 ),
                 pre: ({ children }) => (
-                  <pre className="bg-gray-900 text-gray-100 p-3 rounded-lg overflow-x-auto my-2 font-mono text-xs">
+                  <pre className="bg-black/40 text-gray-200 p-3 rounded-lg overflow-x-auto my-2 font-mono text-xs border border-white/10">
                     {children}
                   </pre>
                 ),
-                strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-                em: ({ children }) => <em className="italic">{children}</em>,
-                h1: ({ children }) => <h1 className="text-lg font-bold my-2">{children}</h1>,
-                h2: ({ children }) => <h2 className="text-base font-bold my-2">{children}</h2>,
-                h3: ({ children }) => <h3 className="text-sm font-bold my-1">{children}</h3>,
+                strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
                 a: ({ href, children }) => (
-                  <a href={href} className="text-indigo-600 hover:underline">
-                    {children}
-                  </a>
+                  <a href={href} className="text-indigo-400 hover:underline">{children}</a>
                 ),
               }}
             >
@@ -60,26 +54,16 @@ export default function MessageBubble({ message }: { message: Message }) {
           )}
         </div>
 
-        {/* Source Citations */}
         {message.sources && message.sources.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
             {message.sources.map((source, idx) => (
-              <a
+              <span
                 key={idx}
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault()
-                  console.log(`Source: ${source.source}, Page: ${source.page}`)
-                }}
-                className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                  isUser
-                    ? 'bg-indigo-500/20 text-indigo-700 hover:bg-indigo-500/30'
-                    : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200'
-                }`}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-500/15 text-indigo-300 border border-indigo-500/20"
               >
-                <span className="truncate max-w-xs">{source.source}</span>
-                <span className="text-indigo-500 font-semibold">p{source.page}</span>
-              </a>
+                <span className="truncate max-w-[160px]">{source.source}</span>
+                <span className="text-indigo-400 font-semibold">p{source.page}</span>
+              </span>
             ))}
           </div>
         )}

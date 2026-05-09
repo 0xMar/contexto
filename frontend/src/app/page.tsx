@@ -1,61 +1,44 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Menu } from 'lucide-react'
 import Sidebar from '@/components/Sidebar'
 import ChatArea from '@/components/ChatArea'
 import { useChat } from '@/hooks/useChat'
 
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const {
-    sessions,
-    activeSessionId,
-    messages,
-    loading,
-    createNewChat,
-    switchSession,
-    deleteChat,
-    sendMessage,
-    uploadFile,
-  } = useChat()
+  const { sessions, activeSessionId, messages, loading, createNewChat, switchSession, deleteChat, sendMessage, uploadFile } = useChat()
 
-  const toggle = () => setSidebarOpen(o => !o)
+  useEffect(() => {
+    const stored = localStorage.getItem('sidebarOpen')
+    if (stored !== null) setSidebarOpen(stored === 'true')
+  }, [])
+
+  const toggle = () =>
+    setSidebarOpen(prev => {
+      localStorage.setItem('sidebarOpen', String(!prev))
+      return !prev
+    })
 
   return (
-    <div className="relative h-screen overflow-hidden bg-white">
-      {/* Sidebar overlay backdrop on mobile */}
-      {sidebarOpen && (
-        <div
-          onClick={toggle}
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-          aria-hidden="true"
-        />
-      )}
+    <div className="flex h-screen overflow-hidden bg-[#212121] text-white">
+      {/* Mobile backdrop */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div
+            key="backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={toggle}
+            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
 
-      {/* Navbar - always on top, z-40 so it's above sidebar */}
-      <div className="fixed top-0 left-0 right-0 h-16 border-b border-gray-200 bg-white px-4 sm:px-6 py-3 flex items-center gap-3 z-40">
-        {/* Toggle button - shows logo when open, hamburger when closed */}
-        <button
-          onClick={toggle}
-          className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors flex-shrink-0"
-          aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
-          title={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
-        >
-          {sidebarOpen ? (
-            // Logo - shown when sidebar is OPEN
-            <div className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
-              C
-            </div>
-          ) : (
-            // Hamburger - shown when sidebar is CLOSED
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          )}
-        </button>
-      </div>
-
-      {/* Sidebar */}
       <Sidebar
         sessions={sessions}
         activeSessionId={activeSessionId}
@@ -63,16 +46,35 @@ export default function Home() {
         onNewChat={createNewChat}
         onSelectSession={switchSession}
         onDeleteSession={deleteChat}
+        onClose={toggle}
       />
 
-      {/* Main chat area - positioned below navbar */}
-      <div className="pt-16 h-screen">
-        <ChatArea
-          messages={messages}
-          loading={loading}
-          onSend={sendMessage}
-          onUpload={uploadFile}
-        />
+      {/* Main area */}
+      <div className="flex flex-col flex-1 min-w-0">
+        {/* Navbar — only shows hamburger when sidebar is closed */}
+        <header className="flex items-center h-14 px-3 flex-shrink-0">
+          <AnimatePresence>
+            {!sidebarOpen && (
+              <motion.button
+                key="hamburger"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.15 }}
+                onClick={toggle}
+                className="p-2 rounded-lg text-gray-400 hover:bg-white/10 hover:text-white transition-colors"
+                aria-label="Open sidebar"
+              >
+                <Menu className="w-5 h-5" />
+              </motion.button>
+            )}
+          </AnimatePresence>
+        </header>
+
+        {/* Chat */}
+        <main className="flex-1 overflow-hidden">
+          <ChatArea messages={messages} loading={loading} onSend={sendMessage} onUpload={uploadFile} />
+        </main>
       </div>
     </div>
   )
