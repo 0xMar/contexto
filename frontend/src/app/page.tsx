@@ -15,6 +15,7 @@ export default function Home() {
 
   useEffect(() => {
     const stored = localStorage.getItem('sidebarOpen')
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (stored !== null) setSidebarOpen(stored === 'true')
     setMounted(true)
   }, [])
