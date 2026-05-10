@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { Menu } from 'lucide-react'
 import Sidebar from '@/components/Sidebar'
 import ChatArea from '@/components/ChatArea'
@@ -9,11 +9,15 @@ import { useChat } from '@/hooks/useChat'
 
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [mounted, setMounted] = useState(false)
   const { sessions, activeSessionId, messages, loading, createNewChat, switchSession, deleteChat, sendMessage, uploadFile } = useChat()
+  const reducedMotion = useReducedMotion()
 
   useEffect(() => {
     const stored = localStorage.getItem('sidebarOpen')
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (stored !== null) setSidebarOpen(stored === 'true')
+    setMounted(true)
   }, [])
 
   const toggle = () =>
@@ -24,14 +28,20 @@ export default function Home() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#212121] text-white">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-2 focus:left-2 focus:px-4 focus:py-2 focus:bg-indigo-600 focus:text-white focus:rounded-lg focus:text-sm"
+      >
+        Skip to main content
+      </a>
       {/* Mobile backdrop */}
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
             key="backdrop"
-            initial={{ opacity: 0 }}
+            initial={{ opacity: reducedMotion ? 1 : 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: reducedMotion ? 1 : 0 }}
             onClick={toggle}
             className="fixed inset-0 bg-black/50 z-30 lg:hidden"
             aria-hidden="true"
@@ -42,7 +52,7 @@ export default function Home() {
       <Sidebar
         sessions={sessions}
         activeSessionId={activeSessionId}
-        isOpen={sidebarOpen}
+        isOpen={mounted ? sidebarOpen : true}
         onNewChat={createNewChat}
         onSelectSession={switchSession}
         onDeleteSession={deleteChat}
@@ -57,22 +67,22 @@ export default function Home() {
             {!sidebarOpen && (
               <motion.button
                 key="hamburger"
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: reducedMotion ? 1 : 0, scale: reducedMotion ? 1 : 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.15 }}
+                exit={{ opacity: reducedMotion ? 1 : 0, scale: reducedMotion ? 1 : 0.8 }}
+                transition={{ duration: reducedMotion ? 0 : 0.15 }}
                 onClick={toggle}
                 className="p-2 rounded-lg text-gray-400 hover:bg-white/10 hover:text-white transition-colors"
                 aria-label="Open sidebar"
               >
-                <Menu className="w-5 h-5" />
+                <Menu className="w-5 h-5" aria-hidden="true" />
               </motion.button>
             )}
           </AnimatePresence>
         </header>
 
         {/* Chat */}
-        <main className="flex-1 overflow-hidden">
+        <main id="main-content" className="flex-1 overflow-hidden">
           <ChatArea messages={messages} loading={loading} onSend={sendMessage} onUpload={uploadFile} />
         </main>
       </div>
