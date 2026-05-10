@@ -25,8 +25,8 @@ export default function ChatArea({ messages, loading, onSend, onUpload }: Props)
   const reducedMotion = useReducedMotion()
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, loading])
+    bottomRef.current?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' })
+  }, [messages, loading, reducedMotion])
 
   const { getRootProps, getInputProps, isDragActive, open: openFilePicker } = useDropzone({
     accept: { 'application/pdf': ['.pdf'], 'text/plain': ['.txt'] },
@@ -90,7 +90,7 @@ export default function ChatArea({ messages, loading, onSend, onUpload }: Props)
             exit={{ opacity: reducedMotion ? 1 : 0 }}
             className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#212121]/90 backdrop-blur-sm border-2 border-dashed border-indigo-500 m-4 rounded-xl pointer-events-none"
           >
-            <Paperclip className="w-8 h-8 text-indigo-400 mb-2" />
+            <Paperclip className="w-8 h-8 text-indigo-400 mb-2" aria-hidden="true" />
             <p className="text-indigo-300 font-semibold">Drop your file here</p>
             <p className="text-indigo-400 text-xs mt-1">PDF or TXT</p>
           </motion.div>
@@ -197,7 +197,7 @@ export default function ChatArea({ messages, loading, onSend, onUpload }: Props)
                     className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full"
                   />
                 ) : (
-                  <Paperclip className="w-4 h-4" />
+                  <Paperclip className="w-4 h-4" aria-hidden="true" />
                 )}
               </button>
 
@@ -213,7 +213,7 @@ export default function ChatArea({ messages, loading, onSend, onUpload }: Props)
                 )}
                 aria-label="Send message"
               >
-                <ArrowUp className="w-4 h-4" />
+                <ArrowUp className="w-4 h-4" aria-hidden="true" />
               </button>
             </div>
           </div>

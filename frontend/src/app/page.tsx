@@ -75,7 +75,7 @@ export default function Home() {
                 className="p-2 rounded-lg text-gray-400 hover:bg-white/10 hover:text-white transition-colors"
                 aria-label="Open sidebar"
               >
-                <Menu className="w-5 h-5" />
+                <Menu className="w-5 h-5" aria-hidden="true" />
               </motion.button>
             )}
           </AnimatePresence>
