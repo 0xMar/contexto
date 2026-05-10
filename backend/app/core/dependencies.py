@@ -11,7 +11,7 @@ _vectorstores: dict[str, Chroma] = {}
 
 class TaskPrefixEmbeddings(GoogleGenerativeAIEmbeddings):
     """
-    Wrapper for gemini-embedding-2-preview.
+    Wrapper for gemini-embedding-2.
     This model requires task instructions as text prefixes instead of task_type param.
     """
 
@@ -26,7 +26,7 @@ class TaskPrefixEmbeddings(GoogleGenerativeAIEmbeddings):
 def get_embeddings() -> TaskPrefixEmbeddings:
     global _embeddings
     if _embeddings is None:
-        model_name = os.getenv("GOOGLE_EMBEDDING_MODEL", "models/gemini-embedding-2-preview")
+        model_name = os.getenv("GOOGLE_EMBEDDING_MODEL", "models/gemini-embedding-2")
         _embeddings = TaskPrefixEmbeddings(
             model=model_name,
             google_api_key=os.getenv("GOOGLE_API_KEY"),
