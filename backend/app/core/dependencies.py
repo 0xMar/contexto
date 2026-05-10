@@ -11,7 +11,7 @@ _vectorstores: dict[str, Chroma] = {}
 
 class TaskPrefixEmbeddings(GoogleGenerativeAIEmbeddings):
     """
-    Wrapper for gemini-embedding-2.
+    Wrapper for models/gemini-embedding-2.
     This model requires task instructions as text prefixes instead of task_type param.
     """
 
