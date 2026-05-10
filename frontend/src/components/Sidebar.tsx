@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { Plus, Trash2, PanelLeftClose } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Session } from '@/hooks/useChat'
@@ -17,14 +17,17 @@ interface Props {
 }
 
 export default function Sidebar({ sessions, activeSessionId, isOpen, onNewChat, onSelectSession, onDeleteSession, onClose }: Props) {
+  const reducedMotion = useReducedMotion()
   return (
     <>
       {/* Desktop: part of flex flow — animates width */}
       <motion.aside
         animate={{ width: isOpen ? 260 : 0 }}
-        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+        transition={reducedMotion ? { duration: 0 } : { duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
         className="hidden lg:flex flex-col overflow-hidden flex-shrink-0 bg-[#171717]"
         aria-hidden={!isOpen}
+        // @ts-expect-error — inert is a valid HTML attribute not yet in React types
+        inert={!isOpen ? '' : undefined}
       >
         <SidebarContent
           sessions={sessions}
@@ -41,10 +44,10 @@ export default function Sidebar({ sessions, activeSessionId, isOpen, onNewChat, 
         {isOpen && (
           <motion.aside
             key="mobile-sidebar"
-            initial={{ x: -260 }}
+            initial={{ x: reducedMotion ? 0 : -260 }}
             animate={{ x: 0 }}
-            exit={{ x: -260 }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            exit={{ x: reducedMotion ? 0 : -260 }}
+            transition={reducedMotion ? { duration: 0 } : { duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
             className="lg:hidden fixed left-0 top-0 h-screen w-[260px] z-40 flex flex-col bg-[#171717]"
           >
             <SidebarContent
@@ -91,26 +94,24 @@ function SidebarContent({ sessions, activeSessionId, onNewChat, onSelectSession,
           <p className="text-xs text-gray-500 text-center py-4">No chats yet</p>
         )}
         {sessions.map(session => (
-          <div
-            key={session.session_id}
-            onClick={() => onSelectSession(session.session_id)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={e => e.key === 'Enter' && onSelectSession(session.session_id)}
-            className={cn(
-              'group flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-colors text-sm',
-              session.session_id === activeSessionId
-                ? 'bg-white/15 text-white'
-                : 'text-gray-400 hover:bg-white/10 hover:text-white'
-            )}
-          >
-            <span className="truncate flex-1">{session.title}</span>
+          <div key={session.session_id} className="group flex items-center justify-between rounded-lg">
+            <button
+              onClick={() => onSelectSession(session.session_id)}
+              className={cn(
+                'flex-1 text-left px-3 py-2 rounded-lg cursor-pointer transition-colors text-sm truncate',
+                session.session_id === activeSessionId
+                  ? 'bg-white/15 text-white'
+                  : 'text-gray-400 hover:bg-white/10 hover:text-white'
+              )}
+            >
+              {session.title}
+            </button>
             <button
               onClick={e => { e.stopPropagation(); onDeleteSession(session.session_id) }}
               className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-gray-200 ml-1 p-0.5 rounded transition-opacity"
               aria-label={`Delete ${session.title}`}
             >
-              <Trash2 className="w-3.5 h-3.5" />
+              <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
           </div>
         ))}

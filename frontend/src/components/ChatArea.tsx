@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { ArrowUp, Paperclip, X } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import MessageBubble from './MessageBubble'
@@ -22,6 +22,7 @@ export default function ChatArea({ messages, loading, onSend, onUpload }: Props)
   const [uploading, setUploading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const reducedMotion = useReducedMotion()
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -75,15 +76,18 @@ export default function ChatArea({ messages, loading, onSend, onUpload }: Props)
         isDragActive && 'bg-indigo-950/20'
       )}
     >
-      <input {...getInputProps()} />
+      <label className="sr-only">
+        Upload PDF or TXT file
+        <input {...getInputProps()} />
+      </label>
 
       {/* Drag overlay */}
       <AnimatePresence>
         {isDragActive && (
           <motion.div
-            initial={{ opacity: 0 }}
+            initial={{ opacity: reducedMotion ? 1 : 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: reducedMotion ? 1 : 0 }}
             className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#212121]/90 backdrop-blur-sm border-2 border-dashed border-indigo-500 m-4 rounded-xl pointer-events-none"
           >
             <Paperclip className="w-8 h-8 text-indigo-400 mb-2" />
@@ -132,21 +136,27 @@ export default function ChatArea({ messages, loading, onSend, onUpload }: Props)
           )}
 
           {/* Upload error */}
-          <AnimatePresence>
-            {uploadError && (
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 8 }}
-                className="mb-4 p-3 rounded-lg bg-red-950/50 border border-red-800 flex items-start gap-2"
-              >
-                <p className="text-sm text-red-300 flex-1">{uploadError}</p>
-                <button onClick={() => setUploadError(null)} className="text-red-400 hover:text-red-200">
-                  <X className="w-4 h-4" />
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <div aria-live="polite" aria-atomic="true">
+            <AnimatePresence>
+              {uploadError && (
+                <motion.div
+                  initial={{ opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : 8 }}
+                  className="mb-4 p-3 rounded-lg bg-red-950/50 border border-red-800 flex items-start gap-2"
+                >
+                  <p className="text-sm text-red-300 flex-1">{uploadError}</p>
+                  <button
+                    onClick={() => setUploadError(null)}
+                    className="text-red-400 hover:text-red-200"
+                    aria-label="Dismiss error"
+                  >
+                    <X className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           <div ref={bottomRef} />
         </div>
@@ -162,6 +172,9 @@ export default function ChatArea({ messages, loading, onSend, onUpload }: Props)
               onChange={autoResize}
               onKeyDown={handleKeyDown}
               rows={1}
+              name="message"
+              autoComplete="off"
+              spellCheck={false}
               placeholder="Ask a question about your document…"
               disabled={loading || uploading}
               className="w-full bg-transparent text-white placeholder:text-gray-500 text-sm leading-relaxed px-4 pt-3.5 pb-12 max-h-[200px] border-0 focus-visible:ring-0"
@@ -179,7 +192,7 @@ export default function ChatArea({ messages, loading, onSend, onUpload }: Props)
               >
                 {uploading ? (
                   <motion.div
-                    animate={{ rotate: 360 }}
+                    animate={reducedMotion ? {} : { rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                     className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full"
                   />
