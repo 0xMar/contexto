@@ -26,8 +26,7 @@ export default function Sidebar({ sessions, activeSessionId, isOpen, onNewChat, 
         transition={reducedMotion ? { duration: 0 } : { duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
         className="hidden lg:flex flex-col overflow-hidden flex-shrink-0 bg-[#171717]"
         aria-hidden={!isOpen}
-        // @ts-expect-error — inert is a valid HTML attribute not yet in React types
-        inert={!isOpen ? '' : undefined}
+        inert={!isOpen}
       >
         <SidebarContent
           sessions={sessions}
