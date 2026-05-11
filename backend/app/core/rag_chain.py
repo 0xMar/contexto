@@ -62,7 +62,6 @@ class RAGChain:
             "question": query,
         }):
             full_response += chunk
-            yield chunk
+            yield "message", chunk
 
-        # Yield metadata as a structured JSON string at the end
-        yield f"__METADATA__{json.dumps({'sources': sources})}"
+        yield "metadata", json.dumps({"sources": sources})

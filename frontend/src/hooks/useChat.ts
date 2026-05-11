@@ -118,6 +118,8 @@ export function useChat() {
       // Initial empty assistant message
       setMessages(prev => [...prev, { role: 'assistant', content: '' }])
 
+      let currentEvent = 'message'
+
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
@@ -126,12 +128,15 @@ export function useChat() {
         const lines = chunk.split('\n')
         
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
+          if (line.startsWith('event: ')) {
+            currentEvent = line.slice(7).trim()
+          } else if (line.startsWith('data: ')) {
             const data = line.slice(6).trim()
-            if (data === '[DONE]') break
-            
-            if (data.startsWith('__METADATA__')) {
-              const metadata = JSON.parse(data.slice(12))
+
+            if (currentEvent === 'done') break
+
+            if (currentEvent === 'metadata') {
+              const metadata = JSON.parse(data)
               setMessages(prev => {
                 const newMessages = [...prev]
                 const last = newMessages[newMessages.length - 1]
