@@ -26,15 +26,24 @@ export function useChat() {
   const [activeSessionId, setActiveSessionId] = useState<string>('')
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
+  const [sessionsPage, setSessionsPage] = useState(0)
+  const [sessionsHasMore, setSessionsHasMore] = useState(false)
+  const [historyPage, setHistoryPage] = useState(0)
+  const [historyHasMore, setHistoryHasMore] = useState(false)
+
+  const SESSIONS_LIMIT = 20
+  const HISTORY_LIMIT = 50
 
   // Load sessions from backend on mount
   useEffect(() => {
-    fetch(`${API_URL}/sessions`)
+    fetch(`${API_URL}/sessions?limit=${SESSIONS_LIMIT}&offset=0`)
       .then(r => r.json())
-      .then((data: Session[]) => {
-        setSessions(data)
-        if (data.length > 0) {
-          switchSession(data[0].session_id)
+      .then((data: { items: Session[]; has_more: boolean }) => {
+        setSessions(data.items)
+        setSessionsHasMore(data.has_more)
+        setSessionsPage(0)
+        if (data.items.length > 0) {
+          switchSession(data.items[0].session_id)
         } else {
           createNewChat()
         }
@@ -46,12 +55,14 @@ export function useChat() {
     setActiveSessionId(sessionId)
     setMessages([])
     try {
-      const res = await fetch(`${API_URL}/history/${sessionId}`)
+      const res = await fetch(`${API_URL}/history/${sessionId}?limit=${HISTORY_LIMIT}&offset=0`)
       const history = await res.json()
-      setMessages(history.map((m: { role: string; content: string }) => ({
+      setMessages(history.items.map((m: { role: string; content: string }) => ({
         role: m.role as Message['role'],
         content: m.content,
       })))
+      setHistoryHasMore(history.has_more)
+      setHistoryPage(0)
     } catch {
       setMessages([{ role: 'error', content: 'Could not load chat history.' }])
     }
@@ -75,6 +86,8 @@ export function useChat() {
     setSessions(prev => [newSession, ...prev])
     setActiveSessionId(sessionId)
     setMessages([])
+    setSessionsPage(0)
+    setSessionsHasMore(false)
     return sessionId
   }, [])
 
@@ -89,6 +102,7 @@ export function useChat() {
         createNewChat()
       }
     }
+    setHistoryPage(0)
   }, [activeSessionId, sessions, switchSession, createNewChat])
 
   const sendMessage = useCallback(async (text: string) => {
@@ -203,15 +217,43 @@ export function useChat() {
     }])
   }, [activeSessionId])
 
+  const loadMoreSessions = useCallback(async () => {
+    if (!sessionsHasMore) return
+    const nextOffset = (sessionsPage + 1) * SESSIONS_LIMIT
+    try {
+      const res = await fetch(`${API_URL}/sessions?limit=${SESSIONS_LIMIT}&offset=${nextOffset}`)
+      const data = await res.json()
+      setSessions(prev => [...prev, ...data.items])
+      setSessionsPage(prev => prev + 1)
+      setSessionsHasMore(data.has_more)
+    } catch { /* silently fail */ }
+  }, [sessionsPage, sessionsHasMore])
+
+  const loadMoreHistory = useCallback(async () => {
+    if (!historyHasMore || !activeSessionId) return
+    const nextOffset = (historyPage + 1) * HISTORY_LIMIT
+    try {
+      const res = await fetch(`${API_URL}/history/${activeSessionId}?limit=${HISTORY_LIMIT}&offset=${nextOffset}`)
+      const data = await res.json()
+      setMessages(prev => [...data.items, ...prev])
+      setHistoryPage(prev => prev + 1)
+      setHistoryHasMore(data.has_more)
+    } catch { /* silently fail */ }
+  }, [activeSessionId, historyPage, historyHasMore])
+
   return {
     sessions,
     activeSessionId,
     messages,
     loading,
+    sessionsHasMore,
+    historyHasMore,
     createNewChat,
     switchSession,
     deleteChat,
     sendMessage,
     uploadFile,
+    loadMoreSessions,
+    loadMoreHistory,
   }
 }

@@ -19,11 +19,15 @@ async def client():
 
 @pytest.fixture(autouse=True)
 def mock_db(monkeypatch):
-    monkeypatch.setattr(main_module, "get_sessions", AsyncMock(return_value=[]))
+    monkeypatch.setattr(main_module, "get_sessions", AsyncMock(return_value={
+        "items": [], "total": 0, "limit": 20, "offset": 0, "has_more": False
+    }))
     monkeypatch.setattr(main_module, "create_session", AsyncMock())
     monkeypatch.setattr(main_module, "update_session_title", AsyncMock())
     monkeypatch.setattr(main_module, "delete_session", AsyncMock())
-    monkeypatch.setattr(main_module, "get_history", AsyncMock(return_value=[]))
+    monkeypatch.setattr(main_module, "get_history", AsyncMock(return_value={
+        "items": [], "total": 0, "limit": 50, "offset": 0, "has_more": False
+    }))
     monkeypatch.setattr(main_module, "save_message", AsyncMock())
 
 

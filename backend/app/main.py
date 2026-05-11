@@ -13,6 +13,7 @@ from app.core.dependencies import delete_vectorstore
 from app.core.db import (
     init_db, get_history, save_message,
     create_session, get_sessions, update_session_title, delete_session,
+    get_sessions_count, get_history_count,
 )
 
 rag_chain: RAGChain | None = None
@@ -42,8 +43,11 @@ app.add_middleware(
 
 # Sessions
 @app.get("/sessions")
-async def list_sessions():
-    return await get_sessions()
+async def list_sessions(limit: int = 20, offset: int = 0):
+    if limit < 0 or offset < 0:
+        raise HTTPException(status_code=400, detail="limit and offset must be non-negative integers")
+    limit = min(limit, 100)
+    return await get_sessions(limit=limit, offset=offset)
 
 
 @app.post("/sessions")
@@ -103,7 +107,7 @@ async def chat(message: Dict[str, str]):
     session_id = message["session_id"]
     text = message["text"]
 
-    history = await get_history(session_id)
+    history = (await get_history(session_id))["items"]
     is_first_message = len(history) == 0
 
     await save_message(session_id, "user", text)
@@ -131,5 +135,8 @@ async def chat(message: Dict[str, str]):
 
 
 @app.get("/history/{session_id}")
-async def history(session_id: str):
-    return await get_history(session_id)
+async def history(session_id: str, limit: int = 50, offset: int = 0):
+    if limit < 0 or offset < 0:
+        raise HTTPException(status_code=400, detail="limit and offset must be non-negative integers")
+    limit = min(limit, 200)
+    return await get_history(session_id, limit=limit, offset=offset)

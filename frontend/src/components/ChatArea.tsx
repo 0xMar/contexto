@@ -14,9 +14,11 @@ interface Props {
   loading: boolean
   onSend: (text: string) => void
   onUpload: (file: File) => Promise<void>
+  onLoadMore: () => void
+  hasMoreMessages: boolean
 }
 
-export default function ChatArea({ messages, loading, onSend, onUpload }: Props) {
+export default function ChatArea({ messages, loading, onSend, onUpload, onLoadMore, hasMoreMessages }: Props) {
   const [input, setInput] = useState('')
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)

@@ -31,9 +31,21 @@ describe('useChat hook', () => {
   })
 
   it('should initialize and load history', async () => {
-    const mockSession = [{ session_id: '123', title: 'Test Chat', created_at: '' }]
-    const mockHistory = [{ role: 'user', content: 'hello' }]
-    
+    const mockSession = {
+      items: [{ session_id: '123', title: 'Test Chat', created_at: '' }],
+      total: 1,
+      limit: 20,
+      offset: 0,
+      has_more: false,
+    }
+    const mockHistory = {
+      items: [{ role: 'user', content: 'hello' }],
+      total: 1,
+      limit: 50,
+      offset: 0,
+      has_more: false,
+    }
+
     ;(fetch as any)
       .mockResolvedValueOnce({ ok: true, json: async () => mockSession })
       .mockResolvedValueOnce({ ok: true, json: async () => mockHistory })
@@ -48,8 +60,14 @@ describe('useChat hook', () => {
   })
 
   it('should send a message and handle streaming', async () => {
-    const mockSession = [{ session_id: '123', title: 'New Chat', created_at: '' }]
-    
+    const mockSession = {
+      items: [{ session_id: '123', title: 'New Chat', created_at: '' }],
+      total: 1,
+      limit: 20,
+      offset: 0,
+      has_more: false,
+    }
+
     // Mock SSE Stream
     const mockStream = new ReadableStream({
       start(controller) {
@@ -62,7 +80,7 @@ describe('useChat hook', () => {
 
     ;(fetch as any)
       .mockResolvedValueOnce({ ok: true, json: async () => mockSession }) // /sessions
-      .mockResolvedValueOnce({ ok: true, json: async () => [] }) // /history
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [], total: 0, limit: 50, offset: 0, has_more: false }) }) // /history
       .mockResolvedValueOnce({
         ok: true,
         body: mockStream

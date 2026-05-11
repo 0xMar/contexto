@@ -10,7 +10,7 @@ import { useChat } from '@/hooks/useChat'
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mounted, setMounted] = useState(false)
-  const { sessions, activeSessionId, messages, loading, createNewChat, switchSession, deleteChat, sendMessage, uploadFile } = useChat()
+  const { sessions, activeSessionId, messages, loading, sessionsHasMore, historyHasMore, createNewChat, switchSession, deleteChat, sendMessage, uploadFile, loadMoreSessions, loadMoreHistory } = useChat()
   const reducedMotion = useReducedMotion()
 
   useEffect(() => {
@@ -57,6 +57,8 @@ export default function Home() {
         onSelectSession={switchSession}
         onDeleteSession={deleteChat}
         onClose={toggle}
+        onLoadMore={loadMoreSessions}
+        hasMoreSessions={sessionsHasMore}
       />
 
       {/* Main area */}
@@ -83,7 +85,7 @@ export default function Home() {
 
         {/* Chat */}
         <main id="main-content" className="flex-1 overflow-hidden">
-          <ChatArea messages={messages} loading={loading} onSend={sendMessage} onUpload={uploadFile} />
+          <ChatArea messages={messages} loading={loading} onSend={sendMessage} onUpload={uploadFile} onLoadMore={loadMoreHistory} hasMoreMessages={historyHasMore} />
         </main>
       </div>
     </div>

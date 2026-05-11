@@ -14,9 +14,11 @@ interface Props {
   onSelectSession: (id: string) => void
   onDeleteSession: (id: string) => void
   onClose: () => void
+  onLoadMore: () => void
+  hasMoreSessions: boolean
 }
 
-export default function Sidebar({ sessions, activeSessionId, isOpen, onNewChat, onSelectSession, onDeleteSession, onClose }: Props) {
+export default function Sidebar({ sessions, activeSessionId, isOpen, onNewChat, onSelectSession, onDeleteSession, onClose, onLoadMore, hasMoreSessions }: Props) {
   const reducedMotion = useReducedMotion()
   return (
     <>
@@ -35,6 +37,8 @@ export default function Sidebar({ sessions, activeSessionId, isOpen, onNewChat, 
           onSelectSession={onSelectSession}
           onDeleteSession={onDeleteSession}
           onClose={onClose}
+          onLoadMore={onLoadMore}
+          hasMoreSessions={hasMoreSessions}
         />
       </motion.aside>
 
@@ -56,6 +60,8 @@ export default function Sidebar({ sessions, activeSessionId, isOpen, onNewChat, 
               onSelectSession={onSelectSession}
               onDeleteSession={onDeleteSession}
               onClose={onClose}
+              onLoadMore={onLoadMore}
+              hasMoreSessions={hasMoreSessions}
             />
           </motion.aside>
         )}
@@ -64,7 +70,7 @@ export default function Sidebar({ sessions, activeSessionId, isOpen, onNewChat, 
   )
 }
 
-function SidebarContent({ sessions, activeSessionId, onNewChat, onSelectSession, onDeleteSession, onClose }: Omit<Props, 'isOpen'>) {
+function SidebarContent({ sessions, activeSessionId, onNewChat, onSelectSession, onDeleteSession, onClose, onLoadMore, hasMoreSessions }: Omit<Props, 'isOpen'>) {
   return (
     <div className="flex flex-col h-full w-[260px]">
       {/* Header */}
@@ -115,6 +121,19 @@ function SidebarContent({ sessions, activeSessionId, onNewChat, onSelectSession,
           </div>
         ))}
       </nav>
+
+      {/* Load more */}
+      {hasMoreSessions && (
+        <div className="p-2 border-t border-white/10">
+          <Button
+            onClick={onLoadMore}
+            variant="ghost"
+            className="w-full justify-start text-sm text-gray-400 hover:text-white hover:bg-white/10 h-9"
+          >
+            Load more
+          </Button>
+        </div>
+      )}
     </div>
   )
 }
