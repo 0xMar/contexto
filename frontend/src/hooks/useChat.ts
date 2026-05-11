@@ -135,16 +135,18 @@ export function useChat() {
 
             if (currentEvent === 'done') break
 
+            if (currentEvent === 'error') {
+              const err = JSON.parse(data)
+              setMessages(prev => {
+                const msgs = [...prev]
+                if (msgs[msgs.length - 1]?.role === 'assistant') msgs.pop()
+                return [...msgs, { role: 'error' as const, content: err.detail ?? 'An error occurred' }]
+              })
+              break
+            }
+
             if (currentEvent === 'metadata') {
               const metadata = JSON.parse(data)
-              setMessages(prev => {
-                const newMessages = [...prev]
-                const last = newMessages[newMessages.length - 1]
-                if (last.role === 'assistant') {
-                  last.sources = metadata.sources
-                }
-                return newMessages
-              })
             } else {
               assistantContent += data
               setMessages(prev => {

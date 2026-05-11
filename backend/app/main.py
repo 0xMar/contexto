@@ -115,10 +115,14 @@ async def chat(message: Dict[str, str]):
 
     async def event_generator():
         full_text = ""
-        async for event, data in rag_chain.generate_response(text, history, session_id):
-            if event == "message":
-                full_text += data
-            yield f"event: {event}\ndata: {data}\n\n"
+        try:
+            async for event, data in rag_chain.generate_response(text, history, session_id):
+                if event == "message":
+                    full_text += data
+                yield f"event: {event}\ndata: {data}\n\n"
+        except Exception as e:
+            yield f"event: error\ndata: {json.dumps({'detail': str(e)})}\n\n"
+            return
 
         await save_message(session_id, "assistant", full_text)
         yield "event: done\ndata: [DONE]\n\n"
