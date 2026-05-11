@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write  # Needed to create GitHub releases and push tags
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history needed for version detection
+
+      - name: Determine next version
+        id: version
+        run: |
+          VERSION=$(bash ./scripts/semantic-version.sh)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "::notice::Next version: $VERSION"
+
+      - name: Create git tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ steps.version.outputs.version }}" -m "chore: release v${{ steps.version.outputs.version }}"
+          git push origin "v${{ steps.version.outputs.version }}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v${{ steps.version.outputs.version }}"
+          name: "Release v${{ steps.version.outputs.version }}"
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+
+      - name: Notify
+        if: always()
+        run: echo "Released v${{ steps.version.outputs.version }}"

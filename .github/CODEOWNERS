@@ -1,0 +1,17 @@
+# CODEOWNERS — Define who is responsible for code review.
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global defaults — all files require at least one approval
+* @0xMar
+
+# Backend — requires backend review
+/app/                @0xMar
+backend/             @0xMar
+
+# Frontend — requires frontend review
+frontend/            @0xMar
+
+# Infrastructure & CI changes require extra scrutiny
+.github/             @0xMar
+Dockerfile           @0xMar
+docker-compose.yml   @0xMar

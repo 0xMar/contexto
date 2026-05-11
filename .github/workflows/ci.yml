@@ -28,7 +28,16 @@ jobs:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: |
           export PYTHONPATH=$PYTHONPATH:$(pwd)
-          pytest
+          pytest --tb=short -q
+
+      - name: Save test coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: |
+            backend/.pytest_cache/
+            backend/.coverage
 
   frontend:
     runs-on: ubuntu-latest
@@ -51,3 +60,9 @@ jobs:
         run: npx tsc --noEmit
       - name: Run tests
         run: npm test -- --run
+      - name: Save test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-report
+          path: frontend/coverage/

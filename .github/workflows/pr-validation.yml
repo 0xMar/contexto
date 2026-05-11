@@ -65,3 +65,18 @@ jobs:
             echo "::error::PR must have exactly ONE 'type:*' label. Found $TYPE_LABELS."
             exit 1
           fi
+
+  check-changes-scope:
+    name: Check PR Has Scope in Title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify PR title has a scope prefix
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if ! echo "$PR_TITLE" | grep -qE '^(feat|fix|test|refactor|ci|chore|docs|build|style|revert)\('; then
+            echo "::error::PR title must follow Conventional Commits format with scope."
+            echo "Expected: type(scope): description"
+            echo "Got: $PR_TITLE"
+            exit 1
+          fi
