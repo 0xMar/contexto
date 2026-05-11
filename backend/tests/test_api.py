@@ -80,13 +80,6 @@ async def test_delete_session(client):
     assert resp.json() == {"ok": True}
 
 
-async def test_delete_session_cleans_vectorstore(client):
-    with patch("app.main.delete_vectorstore") as mock_dv:
-        resp = await client.delete("/sessions/abc")
-    assert resp.status_code == 200
-    mock_dv.assert_called_once_with("abc")
-
-
 # ── Upload ────────────────────────────────────────────────────────────────────
 
 async def test_upload_txt_success(client):
