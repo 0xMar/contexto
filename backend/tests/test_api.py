@@ -35,9 +35,9 @@ def mock_db(monkeypatch):
 def mock_rag(monkeypatch):
     """Inject a fake RAGChain into app.main.rag_chain."""
     async def fake_generate(query, history, session_id):
-        yield "message", "Hello"
-        yield "message", " world"
-        yield "metadata", json.dumps({"sources": []})
+        yield "Hello"
+        yield " world"
+        yield f'__METADATA__{json.dumps({"sources": []})}'
 
     fake = MagicMock()
     fake.generate_response = fake_generate
@@ -130,8 +130,8 @@ async def test_chat_streams_response(client):
     body = resp.text
     assert "Hello" in body
     assert "world" in body
-    assert "event: metadata" in body
-    assert "event: done" in body
+    assert "__METADATA__" in body
+    assert "[DONE]" in body
 
 
 async def test_chat_auto_titles_first_message(client):
@@ -183,14 +183,14 @@ async def test_rag_chain_yields_chunks_and_metadata():
 
     with patch("app.core.rag_chain.get_vectorstore", return_value=mock_vs):
         chunks = []
-        async for event, data in chain.generate_response("q", [], "s1"):
-            chunks.append((event, data))
+        async for chunk in chain.generate_response("q", [], "s1"):
+            chunks.append(chunk)
 
-    assert chunks[0] == ("message", "Answer")
-    assert chunks[1] == ("message", " here")
-    event, data = chunks[2]
-    assert event == "metadata"
-    sources = json.loads(data)["sources"]
+    assert chunks[0] == "Answer"
+    assert chunks[1] == " here"
+    metadata_chunk = chunks[2]
+    assert metadata_chunk.startswith("__METADATA__")
+    sources = json.loads(metadata_chunk[len("__METADATA__"):])["sources"]
     assert sources[0]["source"] == "file.pdf"
     assert sources[0]["page"] == 3
 
