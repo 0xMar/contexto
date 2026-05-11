@@ -44,3 +44,20 @@ def get_vectorstore(session_id: str) -> Chroma:
             embedding_function=get_embeddings(),
         )
     return _vectorstores[session_id]
+
+
+def delete_vectorstore(session_id: str) -> None:
+    vs = _vectorstores.pop(session_id, None)
+    if vs is not None:
+        vs.delete_collection()
+    else:
+        # Collection may exist on disk even if not in memory cache
+        chroma_path = os.getenv("CHROMA_PATH", "./data/chroma_db")
+        try:
+            Chroma(
+                collection_name=session_id,
+                persist_directory=chroma_path,
+                embedding_function=get_embeddings(),
+            ).delete_collection()
+        except Exception:
+            pass

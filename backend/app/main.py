@@ -9,6 +9,7 @@ from fastapi.responses import StreamingResponse
 
 from app.core.document_processor import process_document
 from app.core.rag_chain import RAGChain
+from app.core.dependencies import delete_vectorstore
 from app.core.db import (
     init_db, get_history, save_message,
     create_session, get_sessions, update_session_title, delete_session,
@@ -65,6 +66,7 @@ async def rename_session(session_id: str, body: Dict[str, str]):
 
 @app.delete("/sessions/{session_id}")
 async def remove_session(session_id: str):
+    delete_vectorstore(session_id)
     await delete_session(session_id)
     return {"ok": True}
 
