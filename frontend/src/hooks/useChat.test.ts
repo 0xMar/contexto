@@ -53,9 +53,9 @@ describe('useChat hook', () => {
     // Mock SSE Stream
     const mockStream = new ReadableStream({
       start(controller) {
-        controller.enqueue(new TextEncoder().encode('data: AI \n\n'))
-        controller.enqueue(new TextEncoder().encode('data: response\n\n'))
-        controller.enqueue(new TextEncoder().encode('data: [DONE]\n\n'))
+        controller.enqueue(new TextEncoder().encode('event: message\ndata: AI \n\n'))
+        controller.enqueue(new TextEncoder().encode('event: message\ndata: response\n\n'))
+        controller.enqueue(new TextEncoder().encode('event: done\ndata: [DONE]\n\n'))
         controller.close()
       }
     })
