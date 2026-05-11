@@ -147,6 +147,14 @@ export function useChat() {
 
             if (currentEvent === 'metadata') {
               const metadata = JSON.parse(data)
+              setMessages(prev => {
+                const newMessages = [...prev]
+                const last = newMessages[newMessages.length - 1]
+                if (last.role === 'assistant') {
+                  last.sources = metadata.sources
+                }
+                return newMessages
+              })
             } else {
               assistantContent += data
               setMessages(prev => {
