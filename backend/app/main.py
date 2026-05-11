@@ -113,16 +113,13 @@ async def chat(message: Dict[str, str]):
 
     async def event_generator():
         full_text = ""
-        async for chunk in rag_chain.generate_response(text, history, session_id):
-            if chunk.startswith("__METADATA__"):
-                # Pass metadata as a separate SSE event
-                yield f"data: {chunk}\n\n"
-            else:
-                full_text += chunk
-                yield f"data: {chunk}\n\n"
-        
+        async for event, data in rag_chain.generate_response(text, history, session_id):
+            if event == "message":
+                full_text += data
+            yield f"event: {event}\ndata: {data}\n\n"
+
         await save_message(session_id, "assistant", full_text)
-        yield "data: [DONE]\n\n"
+        yield "event: done\ndata: [DONE]\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
