@@ -343,6 +343,9 @@ env/
 *.swp
 *.swo
 
+# Atl SDD artifacts
+.atl/
+
 # OS files
 .DS_Store
 Thumbs.db

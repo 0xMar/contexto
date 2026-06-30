@@ -2,8 +2,6 @@
 
 Chat with your documents using Retrieval-Augmented Generation (RAG). Upload a PDF or TXT file and ask questions about its content — **Contexto** finds the relevant context and answers using Gemini.
 
-![docquery demo](./demo.gif)
-
 ## 🚀 Features
 
 - **Advanced RAG Pipeline**: Context-aware answers using Google's Gemini models.
@@ -37,7 +35,7 @@ graph TD
 
 | Layer | Technology |
 |---|---|
-| **Frontend** | Next.js 14 (App Router), TypeScript, Tailwind CSS, v0.app |
+| **Frontend** | Next.js 16 (App Router), TypeScript, Tailwind CSS, shadcn/ui |
 | **Backend** | FastAPI, Python 3.12, LangChain (LCEL) |
 | **LLM / Embeddings** | Google Gemini (Flash-Lite / Text-Embedding) |
 | **Vector Store** | ChromaDB |
@@ -106,7 +104,7 @@ npm test
 ├── frontend/
 │   ├── src/
 │   │   ├── hooks/useChat.ts   # SSE streaming hook
-│   │   └── components/        # UI components (v0.app)
+│   │   └── components/        # UI components (shadcn/ui)
 │   └── vitest.config.ts       # Frontend test config
 └── docker-compose.yml
 ```
