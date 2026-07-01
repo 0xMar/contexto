@@ -1,13 +1,17 @@
-FROM node:20-alpine
+FROM node:22-alpine
+
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml ./
 
-RUN npm install
+RUN pnpm install --frozen-lockfile 2>/dev/null; \
+    pnpm approve-builds sharp unrs-resolver 2>/dev/null; \
+    pnpm install --frozen-lockfile
 
 COPY . .
 
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"] 
+CMD ["pnpm", "run", "dev"] 

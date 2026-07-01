@@ -23,11 +23,15 @@ async def client():
 @pytest.fixture(autouse=True)
 def mock_db(monkeypatch):
     """Replace all db functions used in main with async mocks."""
-    monkeypatch.setattr(main_module, "get_sessions", AsyncMock(return_value=[]))
+    monkeypatch.setattr(main_module, "get_sessions", AsyncMock(return_value={
+        "items": [], "total": 0, "limit": 20, "offset": 0, "has_more": False
+    }))
     monkeypatch.setattr(main_module, "create_session", AsyncMock())
     monkeypatch.setattr(main_module, "update_session_title", AsyncMock())
     monkeypatch.setattr(main_module, "delete_session", AsyncMock())
-    monkeypatch.setattr(main_module, "get_history", AsyncMock(return_value=[]))
+    monkeypatch.setattr(main_module, "get_history", AsyncMock(return_value={
+        "items": [], "total": 0, "limit": 50, "offset": 0, "has_more": False
+    }))
     monkeypatch.setattr(main_module, "save_message", AsyncMock())
 
 
@@ -49,7 +53,12 @@ def mock_rag(monkeypatch):
 async def test_list_sessions(client):
     resp = await client.get("/sessions")
     assert resp.status_code == 200
-    assert resp.json() == []
+    data = resp.json()
+    assert data["items"] == []
+    assert data["total"] == 0
+    assert data["limit"] == 20
+    assert data["offset"] == 0
+    assert data["has_more"] is False
 
 
 async def test_create_session(client):
@@ -135,7 +144,9 @@ async def test_chat_streams_response(client):
 
 
 async def test_chat_auto_titles_first_message(client):
-    main_module.get_history.return_value = []  # type: ignore[attr-defined]
+    main_module.get_history.return_value = {  # type: ignore[attr-defined]
+        "items": [], "total": 0, "limit": 50, "offset": 0, "has_more": False
+    }
     await client.post("/chat", json={"text": "What is RAG?", "session_id": "s1"})
     main_module.update_session_title.assert_called_with("s1", "What is RAG?")  # type: ignore[attr-defined]
 
@@ -145,16 +156,24 @@ async def test_chat_auto_titles_first_message(client):
 async def test_get_history_empty(client):
     resp = await client.get("/history/s1")
     assert resp.status_code == 200
-    assert resp.json() == []
+    data = resp.json()
+    assert data["items"] == []
+    assert data["total"] == 0
+    assert data["has_more"] is False
 
 
 async def test_get_history_populated(client):
-    main_module.get_history.return_value = [  # type: ignore[attr-defined]
-        {"role": "user", "content": "hi", "timestamp": "2024-01-01T00:00:00"}
-    ]
+    main_module.get_history.return_value = {  # type: ignore[attr-defined]
+        "items": [{"role": "user", "content": "hi", "timestamp": "2024-01-01T00:00:00"}],
+        "total": 1,
+        "limit": 50,
+        "offset": 0,
+        "has_more": False,
+    }
     resp = await client.get("/history/s1")
     assert resp.status_code == 200
-    assert resp.json()[0]["role"] == "user"
+    data = resp.json()
+    assert data["items"][0]["role"] == "user"
 
 
 # ── RAGChain unit ─────────────────────────────────────────────────────────────

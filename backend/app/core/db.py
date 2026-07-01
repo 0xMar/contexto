@@ -37,13 +37,50 @@ async def create_session(session_id: str, title: str = "New Chat"):
         await db.commit()
 
 
-async def get_sessions() -> list[dict]:
+async def get_sessions_count() -> int:
+    async with aiosqlite.connect(DB_PATH) as db:
+        async with db.execute("SELECT COUNT(*) FROM sessions") as cursor:
+            row = await cursor.fetchone()
+            return row[0]
+
+
+async def get_history_count(session_id: str) -> int:
+    async with aiosqlite.connect(DB_PATH) as db:
+        async with db.execute(
+            "SELECT COUNT(*) FROM conversations WHERE session_id = ?", (session_id,)
+        ) as cursor:
+            row = await cursor.fetchone()
+            return row[0]
+
+
+async def get_sessions(limit: int = 20, offset: int = 0) -> dict:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
+
+        total = await get_sessions_count()
+
+        if limit <= 0 or offset >= total:
+            return {
+                "items": [],
+                "total": total,
+                "limit": limit,
+                "offset": offset,
+                "has_more": False,
+            }
+
         async with db.execute(
-            "SELECT session_id, title, created_at FROM sessions ORDER BY created_at DESC"
+            "SELECT session_id, title, created_at FROM sessions ORDER BY created_at DESC LIMIT ? OFFSET ?",
+            (limit, offset),
         ) as cursor:
-            return [dict(row) for row in await cursor.fetchall()]
+            items = [dict(row) for row in await cursor.fetchall()]
+
+        return {
+            "items": items,
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+            "has_more": offset + len(items) < total,
+        }
 
 
 async def update_session_title(session_id: str, title: str):
@@ -71,11 +108,31 @@ async def save_message(session_id: str, role: str, content: str):
         await db.commit()
 
 
-async def get_history(session_id: str) -> list[dict]:
+async def get_history(session_id: str, limit: int = 50, offset: int = 0) -> dict:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
+
+        total = await get_history_count(session_id)
+
+        if limit <= 0 or offset >= total:
+            return {
+                "items": [],
+                "total": total,
+                "limit": limit,
+                "offset": offset,
+                "has_more": False,
+            }
+
         async with db.execute(
-            "SELECT role, content, timestamp FROM conversations WHERE session_id = ? ORDER BY id",
-            (session_id,),
+            "SELECT role, content, timestamp FROM conversations WHERE session_id = ? ORDER BY id ASC LIMIT ? OFFSET ?",
+            (session_id, limit, offset),
         ) as cursor:
-            return [dict(row) for row in await cursor.fetchall()]
+            items = [dict(row) for row in await cursor.fetchall()]
+
+        return {
+            "items": items,
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+            "has_more": offset + len(items) < total,
+        }

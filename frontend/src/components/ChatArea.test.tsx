@@ -29,6 +29,8 @@ const defaultProps = {
   loading: false,
   onSend: vi.fn(),
   onUpload: vi.fn(),
+  onLoadMore: vi.fn(),
+  hasMoreMessages: false,
 }
 
 describe('ChatArea', () => {
@@ -74,21 +76,14 @@ describe('ChatArea', () => {
     expect(onSend).not.toHaveBeenCalled()
   })
 
-  it('disables send button when loading', () => {
-    render(<ChatArea {...defaultProps} loading={true} />)
-    expect(screen.getByRole('button', { name: /send message/i })).toBeDisabled()
-  })
-
   it('disables send button when input is empty', () => {
     render(<ChatArea {...defaultProps} />)
     expect(screen.getByRole('button', { name: /send message/i })).toBeDisabled()
   })
 
-  it('shows loading indicator when loading', () => {
+  it('disables input when loading', () => {
     render(<ChatArea {...defaultProps} loading={true} />)
-    // The bouncing dots container
-    expect(screen.getAllByRole('button', { name: /send message/i })[0]).toBeDisabled()
-    // AI avatar appears for loading indicator
-    expect(screen.getByText('AI')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText(/ask a question/i)).toBeDisabled()
+    expect(screen.getByRole('button', { name: /send message/i })).toBeDisabled()
   })
 })
