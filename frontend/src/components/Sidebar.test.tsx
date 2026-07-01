@@ -24,6 +24,8 @@ const defaultProps = {
   onSelectSession: vi.fn(),
   onDeleteSession: vi.fn(),
   onClose: vi.fn(),
+  onLoadMore: vi.fn(),
+  hasMoreSessions: false,
 }
 
 describe('Sidebar', () => {

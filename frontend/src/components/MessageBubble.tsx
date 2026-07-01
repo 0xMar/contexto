@@ -1,11 +1,29 @@
 'use client'
 
+import { useState } from 'react'
 import { Message } from '@/hooks/useChat'
 import ReactMarkdown from 'react-markdown'
+import { Copy, Check } from 'lucide-react'
 
-export default function MessageBubble({ message }: { message: Message }) {
+interface Props {
+  message: Message
+  loading?: boolean
+}
+
+export default function MessageBubble({ message, loading }: Props) {
   const isUser = message.role === 'user'
   const isError = message.role === 'error'
+  const [copied, setCopied] = useState(false)
+
+  const isStreaming = loading && message.role === 'assistant' && !message.content
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(message.content)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch { /* silently fail */ }
+  }
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 group`}>
@@ -16,7 +34,7 @@ export default function MessageBubble({ message }: { message: Message }) {
       )}
       <div className={`flex flex-col max-w-[75%] ${isUser ? 'items-end' : 'items-start'}`}>
         <div
-          className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+          className={`relative px-4 py-3 rounded-2xl text-sm leading-relaxed ${
             isUser
               ? 'bg-indigo-600 text-white rounded-br-sm'
               : isError
@@ -26,6 +44,16 @@ export default function MessageBubble({ message }: { message: Message }) {
         >
           {isUser ? (
             <div className="whitespace-pre-wrap">{message.content}</div>
+          ) : isStreaming ? (
+            <div className="flex gap-1.5 py-1">
+              {[0, 150, 300].map(delay => (
+                <span
+                  key={delay}
+                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  style={{ animationDelay: `${delay}ms` }}
+                />
+              ))}
+            </div>
           ) : (
             <ReactMarkdown
               components={{
@@ -51,6 +79,21 @@ export default function MessageBubble({ message }: { message: Message }) {
             >
               {message.content}
             </ReactMarkdown>
+          )}
+
+          {/* Copy button */}
+          {!isStreaming && message.content && (
+            <button
+              onClick={handleCopy}
+              className="absolute -top-2 -right-2 p-1 rounded-full bg-[#1f1f1f] border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[#3f3f3f]"
+              aria-label={copied ? 'Copied' : 'Copy message'}
+            >
+              {copied ? (
+                <Check className="w-3.5 h-3.5 text-green-400" />
+              ) : (
+                <Copy className="w-3.5 h-3.5 text-gray-400" />
+              )}
+            </button>
           )}
         </div>
 

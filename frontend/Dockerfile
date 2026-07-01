@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:22-alpine
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
@@ -6,7 +6,9 @@ WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
 
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile 2>/dev/null; \
+    pnpm approve-builds sharp unrs-resolver 2>/dev/null; \
+    pnpm install --frozen-lockfile
 
 COPY . .
 

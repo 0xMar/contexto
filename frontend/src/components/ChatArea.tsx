@@ -115,27 +115,8 @@ export default function ChatArea({ messages, loading, onSend, onUpload, onLoadMo
           )}
 
           {messages.map((msg, i) => (
-            <MessageBubble key={i} message={msg} />
+            <MessageBubble key={i} message={msg} loading={loading && i === messages.length - 1 && msg.role === 'assistant'} />
           ))}
-
-          {loading && (
-            <div className="flex justify-start mb-4">
-              <div className="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-white text-xs font-bold mr-2 flex-shrink-0 mt-1">
-                AI
-              </div>
-              <div className="bg-[#2f2f2f] border border-white/10 px-4 py-3 rounded-2xl rounded-bl-sm">
-                <div className="flex gap-1.5">
-                  {[0, 150, 300].map(delay => (
-                    <span
-                      key={delay}
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                      style={{ animationDelay: `${delay}ms` }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Upload error */}
           <div aria-live="polite" aria-atomic="true">
